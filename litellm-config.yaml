@@ -1,0 +1,8 @@
+router_settings:
+  routing_strategy: "least-busy"
+
+model_list:
+  - model_name: ollama
+    litellm_params:
+      model: "ollama/llama2"
+      api_base: http://host.docker.internal:11434
