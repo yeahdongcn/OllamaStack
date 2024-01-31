@@ -20,6 +20,7 @@ graph LR;
     subgraph Host
       subgraph CLI
         B(Mods)
+        G(Collector)
       end
       subgraph Server
         C(Ollama)
@@ -29,6 +30,8 @@ graph LR;
     subgraph Container
       E(LiteLLM Proxy)
       F(Ollama Web UI)
+      H(Prometheus)
+      I(Grafana)
     end
     A(User) --> |Terminal|B;
     A --> |Browser|F;
@@ -36,6 +39,8 @@ graph LR;
     E --> |REST API|C;
     F --> |REST API|C;
     C-. Link .-> D;
+    H --> |Client API|G;
+    I --> |Data Source|H;
 ```
 
 ## Quickstart
@@ -50,3 +55,5 @@ $ ./stop.sh
 ### Demo
 
 ![633462](https://github.com/yeahdongcn/OllamaStack/assets/2831050/1290b08a-6636-493e-8ad4-edcb18971198)
+
+<img width="1277" alt="Screenshot 2024-01-31 at 11 45 31" src="https://github.com/yeahdongcn/OllamaStack/assets/2831050/3370513b-8920-4ee1-bc7c-0f2e4c4e8c40">

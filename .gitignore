@@ -1,2 +1,9 @@
 ollama.pid
 bin/
+
+# SPM
+performance-statistics/.build/
+performance-statistics/Package.resolved
+
+# VSCode
+.vscode/

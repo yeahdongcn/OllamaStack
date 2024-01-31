@@ -3,6 +3,7 @@
 # Initialize variables:
 LAST_SPINNER_PID=""
 OLLAMA_BINARY="$(pwd)/bin/ollama"
+COLLECTOR_BINARY="$(pwd)/bin/collector"
 OLLAMA_PID="$(pwd)/ollama.pid"
 
 # Kill background processes on exit
@@ -79,8 +80,28 @@ read -rp "Do you want to start web UI? y/n [n]: " USE_WEBUI
 if [[ $USE_WEBUI =~ ^[Yy]$ ]]; then
     mkdir -p ollama-webui
     docker rm -f ollama-webui >/dev/null 2>&1
-    docker run --pull always -d -p 3000:8080 --add-host=host.docker.internal:host-gateway -v ollama-webui:/app/backend/data \
+    docker run --pull always -d -p 3001:8080 --add-host=host.docker.internal:host-gateway -v ollama-webui:/app/backend/data \
         --name ollama-webui --restart always ghcr.io/ollama-webui/ollama-webui:main
+    sleep 5
+    open http://localhost:3001
+fi
+
+read -rp "Do you want to start performance statistics monitor? y/n [n]: " USE_PSM
+if [[ $USE_PSM =~ ^[Yy]$ ]]; then
+    cd performance-statistics && swift build && cp $(swift build --show-bin-path)/collector ../bin/collector && cd ..
+    "$COLLECTOR_BINARY" >/dev/null 2>&1 &
+    docker rm -f prometheus >/dev/null 2>&1
+    docker run -d -p 9090:9090 --name prometheus -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
+    docker rm -f grafana >/dev/null 2>&1
+    docker run -d -p 3000:3000 --name grafana \
+        -v "$(pwd)/grafana/datasources:/etc/grafana/provisioning/datasources" \
+        -v "$(pwd)/grafana/dashboards:/var/lib/grafana/dashboards" \
+        -e "GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/dashboard.json" \
+        -e "GF_SECURITY_ADMIN_USER=admin" \
+        -e "GF_SECURITY_ADMIN_PASSWORD=admin" \
+        -e "GF_AUTH_ANONYMOUS_ENABLED=true" \
+        -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" \
+        grafana/grafana-enterprise
     sleep 5
     open http://localhost:3000
 fi
